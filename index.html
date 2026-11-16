@@ -164,6 +164,7 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button{fon
 .p-head{margin-left:132px;min-height:60px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .p-head h2{font:700 25px/1.15 var(--font-h);letter-spacing:-.02em;color:var(--navy)}
 .p-head .role{font:400 11.5px var(--font-b);color:var(--gray-2);margin-top:3px}
+.lic-link{color:var(--teal);cursor:pointer;display:inline-flex;align-items:center;gap:5px;text-decoration:none}.lic-link:hover{text-decoration:underline}.lic-link .ico{font-size:11px;stroke-width:2.4}
 .share{display:inline-flex;align-items:center;gap:6px;font:600 10.5px var(--font-h);color:var(--teal);padding-top:4px;white-space:nowrap}
 .share .ico{font-size:13px}
 .info{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;padding:0 4px}
@@ -268,6 +269,7 @@ hr.sep{border:0;border-top:1.3px solid #c4ced8;margin:16px 0}
 <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
 <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4M8.2 13.2l7.6 4"/></symbol>
 <symbol id="i-edit" viewBox="0 0 24 24"><path d="M5 5h8M5 5v14h14v-8"/><path d="M17.5 3.5l3 3L12 15l-4 1 1-4z"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></symbol>
 <symbol id="i-fb" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M13.5 21v-8h2.7l.5-3.2h-3.2V7.8c0-.9.4-1.6 1.7-1.6h1.6V3.4c-.3 0-1.3-.2-2.4-.2-2.5 0-4.1 1.5-4.1 4.2v2.4H7.5V13h2.8v8z"/></symbol>
 <symbol id="i-ig" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4.5"/><circle cx="12" cy="12" r="3.7"/><circle cx="16.8" cy="7.2" r=".6" fill="currentColor"/></symbol>
 </defs></svg>
@@ -544,7 +546,7 @@ function renderProfile(slug){
    '<div class="body"><div class="p-photo'+(photo(a)?'':' ini')+'">'+(photo(a)?'<img src="'+esc(photo(a))+'" alt="'+esc(a.full_name)+'">':esc(initials(a.full_name)))+'</div>'+
    '<div class="p-head"><div><h2>'+esc(a.full_name)+'</h2><div class="role">'+esc(roleOf(a))+'</div></div><button class="share" id="shareBtn"><svg class="ico"><use href="#i-share"/></svg>'+esc(T('share'))+'</button></div>'+
    '<div class="info">'+row('i-phone',esc(T('phone')),a.phone)+row('i-mail',esc(T('mail')),a.email)+row('i-globe',esc(T('npn')),a.npn)+row('i-pin',esc(T('res')),a.residence)+'</div>'+
-   '<hr class="sep"><div class="trio">'+row('i-shield',esc(T('licType')),a.license_type)+row('i-globe',esc(T('langs')),langTxt)+
+   '<hr class="sep"><div class="trio">'+licTypeRow(a)+row('i-globe',esc(T('langs')),langTxt)+
    '<div class="irow"><span class="ic"><svg class="ico" style="fill:currentColor;stroke:none"><use href="#i-star"/></svg></span><div><small>'+esc(T('spec'))+'</small><b class="teal">'+(specs?esc(specs):'—')+'</b></div></div></div>'+
    '<hr class="sep"><div class="lic-head"><h3>'+esc(T('licHead'))+'</h3><span>'+esc(T('licNote'))+'</span></div>'+
    '<div class="lic-list" id="licList">'+licChips(a,{})+'</div>'+
@@ -555,6 +557,11 @@ function renderProfile(slug){
    '<div class="qual"><small class="k">'+esc(T('qualK').toUpperCase())+'</small><h3>'+esc(T('qualH'))+'</h3><a href="'+(QUALIFY_URL?esc(QUALIFY_URL):'mailto:protection@workwellus.com')+'" '+(QUALIFY_URL?'target="_blank" rel="noopener"':'')+'>'+esc(T('click'))+' <svg class="ico"><use href="#i-right"/></svg></a></div></aside></div>';
   document.getElementById('shareBtn').onclick=function(){var url='https://workwellus.com/'+a.slug;if(navigator.share){navigator.share({title:a.full_name+' | WorkWell Protection',url:url}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){toast(T('linkCopied'))},function(){})}};
   wireProfileSearch();loadReviews(a);loadLicDocs(a);
+}
+function licTypeRow(a){
+  var ok=/^https?:\/\//i.test(a.license_url||''),v=a.license_type;
+  var val=!v?'—':(ok?'<a class="lic-link" href="'+esc(a.license_url)+'" target="_blank" rel="noopener noreferrer">'+esc(v)+'<svg class="ico"><use href="#i-ext"/></svg></a>':esc(v));
+  return '<div class="irow"><span class="ic"><svg class="ico"><use href="#i-shield"/></svg></span><div><small>'+esc(T('licType'))+'</small><b>'+val+'</b></div></div>';
 }
 function licChips(a,docs){
   if(!(a.states||[]).length)return '<span style="font:500 12px var(--font-h);color:var(--gray)">—</span>';
