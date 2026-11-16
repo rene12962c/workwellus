@@ -448,7 +448,8 @@ var DEMO=[
 {slug:'dulce-isaac',full_name:'Dulce Isaac',npn:'22336309',featured:true,featured_order:3}];
 var AGENTS=[],RATING={},DEMO_MODE=false;
 var lang='es';try{var sv=localStorage.getItem('ww_lang');if(sv==='en'||sv==='es')lang=sv;}catch(e){}
-var T=function(k){return (STR[lang][k]!=null?STR[lang][k]:STR.es[k])||''};
+var CFG={},CFGMAP={callUs:'call_button',hereT:'help_title',talk:'help_button',qualH:'qual_title',click:'qual_button',trustT:'trust_title',trustP:'trust_text'};
+var T=function(k){var c=CFG[CFGMAP[k]];if(c){var v=(lang==='en'&&c.value_en)||c.value_es;if(v)return v}return (STR[lang][k]!=null?STR[lang][k]:STR.es[k])||''};
 var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
 var norm=function(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim()};
 var stName=function(c){var n=ST[c]||c;return lang==='es'?(ST_ES[n]||n):n};
@@ -463,6 +464,10 @@ var telHref=function(p){return p?'tel:'+String(p).replace(/[^\d+]/g,''):''};
 
 function load(){
   if(!SB_KEY){AGENTS=DEMO.slice();DEMO_MODE=true;return Promise.resolve();}
+  rest('site_settings?select=key,value_es,value_en').then(function(l){(l||[]).forEach(function(r){CFG[r.key]=r});
+    var g=function(k){return CFG[k]&&CFG[k].value_es||''};
+    COMPANY_PHONE=g('company_phone')||COMPANY_PHONE;BOOK_URL=g('booking_url')||BOOK_URL;QUALIFY_URL=g('qualify_url')||QUALIFY_URL;FACEBOOK_URL=g('facebook_url')||FACEBOOK_URL;INSTAGRAM_URL=g('instagram_url')||INSTAGRAM_URL;
+    applyI18n();route();}).catch(function(){});
   return Promise.all([
     rest('agents?select=*&published=eq.true&order=full_name.asc'),
     rest('agent_rating_summary?select=*').catch(function(){return []})
@@ -499,6 +504,7 @@ function agentCard(a){
 }
 function renderHome(){
   var feat=AGENTS.filter(function(a){return a.featured}).sort(function(x,y){return (x.featured_order||100)-(y.featured_order||100)}).slice(0,3);
+  document.querySelector('.feat-card').classList.toggle('hide',!feat.length);
   document.getElementById('featList').innerHTML=feat.map(function(a){
     var tel=telHref(a.phone);
     return '<div class="feat-row">'+avatar(a)+'<div class="meta"><b>'+esc(a.full_name)+'</b><small>'+esc(T('brokerRole'))+(a.npn?'<br>NPN '+esc(a.npn):'')+'</small></div>'+
