@@ -547,14 +547,25 @@ function renderProfile(slug){
    '<hr class="sep"><div class="trio">'+row('i-shield',esc(T('licType')),a.license_type)+row('i-globe',esc(T('langs')),langTxt)+
    '<div class="irow"><span class="ic"><svg class="ico" style="fill:currentColor;stroke:none"><use href="#i-star"/></svg></span><div><small>'+esc(T('spec'))+'</small><b class="teal">'+(specs?esc(specs):'—')+'</b></div></div></div>'+
    '<hr class="sep"><div class="lic-head"><h3>'+esc(T('licHead'))+'</h3><span>'+esc(T('licNote'))+'</span></div>'+
-   '<div class="lic-list">'+((a.states||[]).length?(a.states||[]).map(function(c){return '<span class="lic"><svg class="ico"><use href="#i-doc"/></svg>'+esc(stName(c))+'</span>'}).join(''):'<span style="font:500 12px var(--font-h);color:var(--gray)">—</span>')+'</div>'+
+   '<div class="lic-list" id="licList">'+licChips(a,{})+'</div>'+
    '<hr class="sep"><div id="revBox"></div></div></article>'+
    '<div class="pf-cta">'+(tel?'<a class="ll" href="'+esc(tel)+'"><svg class="ico"><use href="#i-phone"/></svg>'+esc(T('call'))+'</a>':'')+(book?'<a class="ag" href="'+esc(book)+'" '+(BOOK_URL?'target="_blank" rel="noopener"':'')+'><svg class="ico"><use href="#i-cal"/></svg>'+esc(T('book'))+'</a>':'')+'</div></div>'+
    '<aside class="side"><div class="help"><small class="k">'+esc(T('need').toUpperCase())+'</small><h3>'+esc(T('hereT'))+'</h3><a href="'+(COMPANY_PHONE?esc(telHref(COMPANY_PHONE)):'#contacto')+'"><svg class="ico"><use href="#i-phone"/></svg>'+esc(T('talk'))+'</a></div>'+
    '<div class="trust"><div class="sh"><svg class="ico"><use href="#i-shield"/></svg></div><h4>'+esc(T('trustT'))+'</h4><p>'+esc(T('trustP'))+'</p><a href="'+NPN_LOOKUP+'" target="_blank" rel="noopener">'+esc(T('verifyNpn'))+'</a></div>'+
    '<div class="qual"><small class="k">'+esc(T('qualK').toUpperCase())+'</small><h3>'+esc(T('qualH'))+'</h3><a href="'+(QUALIFY_URL?esc(QUALIFY_URL):'mailto:protection@workwellus.com')+'" '+(QUALIFY_URL?'target="_blank" rel="noopener"':'')+'>'+esc(T('click'))+' <svg class="ico"><use href="#i-right"/></svg></a></div></aside></div>';
   document.getElementById('shareBtn').onclick=function(){var url='https://workwellus.com/'+a.slug;if(navigator.share){navigator.share({title:a.full_name+' | WorkWell Protection',url:url}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){toast(T('linkCopied'))},function(){})}};
-  wireProfileSearch();loadReviews(a);
+  wireProfileSearch();loadReviews(a);loadLicDocs(a);
+}
+function licChips(a,docs){
+  if(!(a.states||[]).length)return '<span style="font:500 12px var(--font-h);color:var(--gray)">—</span>';
+  return a.states.map(function(c){var u=docs[c],ic='<svg class="ico"><use href="#i-doc"/></svg>';
+    return /^https:\/\//.test(u||'')?'<a class="lic" href="'+esc(u)+'" target="_blank" rel="noopener">'+ic+esc(stName(c))+'</a>':'<span class="lic">'+ic+esc(stName(c))+'</span>'}).join('');
+}
+function loadLicDocs(a){
+  if(!SB_KEY||!a.profile_ref)return;
+  rest('agent_license_docs?select=state,url&profile_ref=eq.'+encodeURIComponent(a.profile_ref)).then(function(l){
+    var d={};(l||[]).forEach(function(r){d[r.state]=r.url});var el=document.getElementById('licList');if(el&&CUR===a)el.innerHTML=licChips(a,d);
+  }).catch(function(){});
 }
 function loadReviews(a){
   var box=document.getElementById('revBox');if(!box)return;
