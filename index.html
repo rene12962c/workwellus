@@ -539,7 +539,7 @@ function renderProfile(slug){
   if(!a){root.innerHTML='<div class="pf-msg">'+esc(T('notFound'))+'<br><a href="/" data-nav="/">'+esc(T('backHome'))+'</a></div>';document.title='WorkWell Protection';return}
   CUR=a;document.title=a.full_name+' | WorkWell Protection';
   var tel=telHref(a.phone),langTxt=a.languages?T(a.languages):'',specs=(a.specialties||[]).map(function(k){return (STR[lang].spc[k])||k}).join(', ');
-  var book=BOOK_URL||(a.email?'mailto:'+a.email:'');
+  var calOk=/^https?:\/\//i.test(a.calendar_url||''),book=calOk?a.calendar_url:(BOOK_URL||(a.email?'mailto:'+a.email:''));
   var row=function(ic,l,v,extra){return '<div class="irow"><span class="ic"><svg class="ico"><use href="#'+ic+'"/></svg></span><div><small>'+l+'</small><b>'+(v?esc(v):'—')+'</b></div></div>'};
   root.innerHTML=
    '<span class="pill-eyebrow">'+esc(T('eyebrow').replace(/\.$/,''))+'</span>'+
@@ -554,7 +554,7 @@ function renderProfile(slug){
    '<hr class="sep"><div class="lic-head"><h3>'+esc(T('licHead'))+'</h3><span>'+esc(T('licNote'))+'</span></div>'+
    '<div class="lic-list" id="licList">'+licChips(a,{})+'</div>'+
    '<hr class="sep"><div id="revBox"></div></div></article>'+
-   '<div class="pf-cta">'+(tel?'<a class="ll" href="'+esc(tel)+'"><svg class="ico"><use href="#i-phone"/></svg>'+esc(T('call'))+'</a>':'')+(book?'<a class="ag" href="'+esc(book)+'" '+(BOOK_URL?'target="_blank" rel="noopener"':'')+'><svg class="ico"><use href="#i-cal"/></svg>'+esc(T('book'))+'</a>':'')+'</div></div>'+
+   '<div class="pf-cta">'+(tel?'<a class="ll" href="'+esc(tel)+'"><svg class="ico"><use href="#i-phone"/></svg>'+esc(T('call'))+'</a>':'')+(book?'<a class="ag" href="'+esc(book)+'" '+((calOk||BOOK_URL)?'target="_blank" rel="noopener noreferrer"':'')+'><svg class="ico"><use href="#i-cal"/></svg>'+esc(T('book'))+'</a>':'')+'</div></div>'+
    '<aside class="side"><div class="help"><small class="k">'+esc(T('need').toUpperCase())+'</small><h3>'+esc(T('hereT'))+'</h3><a href="'+(COMPANY_PHONE?esc(telHref(COMPANY_PHONE)):'#contacto')+'"><svg class="ico"><use href="#i-phone"/></svg>'+esc(T('talk'))+'</a></div>'+
    '<div class="trust"><div class="sh"><svg class="ico"><use href="#i-shield"/></svg></div><h4>'+esc(T('trustT'))+'</h4><p>'+esc(T('trustP'))+'</p><a href="'+NPN_LOOKUP+'" target="_blank" rel="noopener">'+esc(T('verifyNpn'))+'</a></div>'+
    '<div class="qual"><small class="k">'+esc(T('qualK').toUpperCase())+'</small><h3>'+esc(T('qualH'))+'</h3><a href="'+(QUALIFY_URL?esc(QUALIFY_URL):'mailto:protection@workwellus.com')+'" '+(QUALIFY_URL?'target="_blank" rel="noopener"':'')+'>'+esc(T('click'))+' <svg class="ico"><use href="#i-right"/></svg></a></div></aside></div>';
@@ -564,10 +564,9 @@ function renderProfile(slug){
 function licTypeLabel(v){return (v&&STR[lang].lt[v])||v}
 function resLabel(v){var c=String(v||'').trim().toUpperCase();return ST[c]?stName(c):v}
 function licTypeRow(a){
-  var ok=/^https?:\/\//i.test(a.license_url||''),v=licTypeLabel(a.license_type),calOk=/^https?:\/\//i.test(a.calendar_url||'');
+  var ok=/^https?:\/\//i.test(a.license_url||''),v=licTypeLabel(a.license_type);
   var val=!v?'':(ok?'<a class="lic-link" href="'+esc(a.license_url)+'" target="_blank" rel="noopener noreferrer">'+esc(v)+'<svg class="ico"><use href="#i-ext"/></svg></a>':'<span>'+esc(v)+'</span>');
-  var cal=calOk?'<a class="lic-link" href="'+esc(a.calendar_url)+'" target="_blank" rel="noopener noreferrer">'+esc(T('bookCall'))+'<svg class="ico"><use href="#i-ext"/></svg></a>':'';
-  val=(val||cal)?'<span class="lic-links">'+val+cal+'</span>':'—';
+  val=val||'—';
   return '<div class="irow"><span class="ic"><svg class="ico"><use href="#i-shield"/></svg></span><div><small>'+esc(T('licType'))+'</small><b>'+val+'</b></div></div>';
 }
 function licChips(a,docs){
